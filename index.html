@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plan Nutricional de Carla</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Aplicar la fuente Inter a todo el cuerpo */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Estilo para los links de recetas */
+        .recipe-link {
+            @apply text-primary-600 font-semibold underline decoration-dotted hover:text-primary-800 transition-colors;
+        }
+        /* Estilo para el switch de entrenamiento */
+        /* 
+          Usamos 'peer' para cambiar el estilo del fondo y del círculo 
+          cuando el input (que es un 'peer') está 'checked'.
+        */
+        /* Ya no es necesario, la lógica está en las clases de Tailwind */
+        /* Estilo para botones de digestión seleccionados */
+        .digestive-btn.selected {
+            @apply ring-4 ring-primary-300 scale-110;
+        }
+    </style>
+    <script>
+        // Configuración de la paleta de colores de Tailwind
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // Usaremos 'fuchsia' que da unos tonos rosados/morados muy bonitos
+                        primary: {
+                            50: '#fdf4ff',
+                            100: '#fae8ff',
+                            200: '#f5d0fe',
+                            300: '#f0abfc',
+                            400: '#e879f9',
+                            500: '#d946ef',
+                            600: '#c026d3',
+                            700: '#a21caf',
+                            800: '#86198f',
+                            900: '#701a75',
+                            950: '#4a044e',
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-primary-50 min-h-screen flex items-center justify-center p-4 sm:p-8">
+
+    <main class="w-full max-w-5xl mx-auto"> <!-- Aumentado el max-w para la grilla de 3 col -->
+        <!-- Saludo Principal -->
+        <header class="text-center mb-6">
+            <h1 class="text-4xl sm:text-5xl font-bold text-primary-800">¡Hola, Carla!</h1>
+            <p id="subtitle" class="text-lg sm:text-xl text-primary-700 mt-2">Aquí está tu plan de hoy:</p>
+        </header>
+
+        <!-- NUEVO: Switch de Entrenamiento -->
+        <div class="flex items-center justify-center mb-6 space-x-3">
+            <span class="font-semibold text-primary-700">¿Día de Entrenamiento?</span>
+            <!-- NUEVO SWITCH -->
+            <label for="training-toggle" class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="training-toggle" class="sr-only peer">
+                <div class="w-11 h-6 bg-gray-200 rounded-full peer-focus:ring-4 peer-focus:ring-primary-300 peer-checked:bg-primary-600"></div>
+                <div class="absolute top-0.5 left-[2px] bg-white border-gray-300 border rounded-full h-5 w-5 transition-all peer-checked:translate-x-full peer-checked:border-white"></div>
+            </label>
+            <!-- FIN NUEVO SWITCH -->
+            <span class="font-semibold text-primary-700">¡Sí! 🏋️‍♀️</span>
+        </div>
+
+        <!-- Card del Plan del Día -->
+        <div class="bg-white rounded-xl shadow-2xl overflow-hidden mb-6">
+            <!-- Header de la Card con Navegación -->
+            <div class="bg-primary-600 p-5 flex items-center justify-between">
+                <button id="prev-day-btn" class="text-white p-2 rounded-full hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-white" aria-label="Día anterior">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <h2 id="day-title" class="text-3xl font-bold text-white text-center px-4">
+                    Cargando plan...
+                </h2>
+                <button id="next-day-btn" class="text-white p-2 rounded-full hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-white" aria-label="Día siguiente">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Contenido de la Card -->
+            <div class="p-5 sm:p-8 grid md:grid-cols-2 gap-6">
+                
+                <!-- Desayuno -->
+                <div>
+                    <h3 class="text-2xl font-semibold text-primary-700 border-b-2 border-primary-100 pb-2 mb-3">
+                        🍳 Desayuno
+                    </h3>
+                    <p id="breakfast-plan" class="text-gray-700 leading-relaxed"></p>
+                </div>
+
+                <!-- Almuerzo -->
+                <div>
+                    <h3 class="text-2xl font-semibold text-primary-700 border-b-2 border-primary-100 pb-2 mb-3">
+                        🥗 Almuerzo
+                    </h3>
+                    <p id="lunch-plan" class="text-gray-700 leading-relaxed"></p>
+                </div>
+
+                <!-- Merienda -->
+                <div>
+                    <h3 class="text-2xl font-semibold text-primary-700 border-b-2 border-primary-100 pb-2 mb-3">
+                        ☕ Merienda
+                    </h3>
+                    <p id="snack-plan" class="text-gray-700 leading-relaxed"></p>
+                </div>
+
+                <!-- Cena -->
+                <div>
+                    <h3 class="text-2xl font-semibold text-primary-700 border-b-2 border-primary-100 pb-2 mb-3">
+                        🌙 Cena
+                    </h3>
+                    <p id="dinner-plan" class="text-gray-700 leading-relaxed"></p>
+                </div>
+            </div> <!-- Cierre de "Contenido de la Card" -->
+        </div> <!-- Cierre de "Card del Plan del Día" -->
+
+        <!-- Grilla de 6 Tarjetas (NUEVA ESTRUCTURA) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+            <!-- Colaciones -->
+            <div class="bg-white rounded-xl shadow-lg p-5 sm:p-6">
+                <h3 class="text-2xl font-semibold text-primary-700 mb-3">🍎 Colaciones</h3>
+                <ul id="colaciones-list" class="list-disc list-inside text-gray-700 space-y-1">
+                    <!-- Se rellena con JS -->
+                </ul>
+            </div>
+<!-- Tracker de Hidratación -->
+            <div class="bg-white rounded-xl shadow-lg p-5 sm:p-6">
+                <h3 class="text-2xl font-semibold text-primary-700 mb-3">💧 Meta de Hidratación (3L)</h3>
+                <p class="text-gray-600 text-sm mb-4">Clic en un vaso (250ml).</p>
+                <div id="water-tracker" class="grid grid-cols-6 gap-3">
+                    <!-- 12 vasos se generarán aquí con JS -->
+                </div>
+                <button id="reset-water" class="mt-4 w-full bg-primary-100 text-primary-700 font-medium py-2 px-4 rounded-lg hover:bg-primary-200 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-300">
+                    Reiniciar
+                </button>
+            </div>
+            <!-- Recordatorios -->
+            <div class="bg-white rounded-xl shadow-lg p-5 sm:p-6">
+                <h3 class="text-2xl font-semibold text-primary-700 mb-3">💧 Recordatorios Clave</h3>
+                <ul id="recordatorios-list" class="list-disc list-inside text-gray-700 space-y-1">
+                    <!-- Se rellena con JS -->
+                </ul>
+            </div>
+
+            <!-- Tips de Preparación Semanal -->
+            <div class="bg-white rounded-xl shadow-lg p-5 sm:p-6">
+                <h3 class="text-2xl font-semibold text-primary-700 mb-3">💡 Tips de Preparación</h3>
+                <ul id="meal-prep-list" class="list-disc list-inside text-gray-700 space-y-1">
+                    <!-- Se rellena con JS -->
+                </ul>
+            </div>
+            
+            
+
+            <!-- NUEVO: Diario Digestivo -->
+            <div class="bg-white rounded-xl shadow-lg p-5 sm:p-6">
+                <h3 class="text-2xl font-semibold text-primary-700 mb-3">🙂 Mi Bienestar Digestivo</h3>
+                <p class="text-gray-600 text-sm mb-4">¿Cómo te sentiste hoy?</p>
+                <div id="digestive-tracker" class="flex justify-around items-center">
+                    <button class="digestive-btn p-2 rounded-full text-3xl transition-transform duration-200 hover:scale-110" data-value="1" aria-label="Mal">😠</button>
+                    <button class="digestive-btn p-2 rounded-full text-3xl transition-transform duration-200 hover:scale-110" data-value="2" aria-label="Algo mal">😕</button>
+                    <button class="digestive-btn p-2 rounded-full text-3xl transition-transform duration-200 hover:scale-110" data-value="3" aria-label="Neutral">😐</button>
+                    <button class="digestive-btn p-2 rounded-full text-3xl transition-transform duration-200 hover:scale-110" data-value="4" aria-label="Bien">😊</button>
+                    <button class="digestive-btn p-2 rounded-full text-3xl transition-transform duration-200 hover:scale-110" data-value="5" aria-label="Excelente">😄</button>
+                </div>
+            </div>
+
+            <!-- NUEVO: Bloc de Notas -->
+            <div class="bg-white rounded-xl shadow-lg p-5 sm:p-6">
+                <h3 class="text-2xl font-semibold text-primary-700 mb-3">🗒️ Mis Notas del Día</h3>
+                <textarea id="notes-textarea" class="w-full h-24 p-2 border border-primary-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300" placeholder="Anotaciones, cambios o ideas..."></textarea>
+            </div>
+
+        </div>
+        
+        <!-- Modal Contenedor (Oculto por defecto) -->
+        <div id="recipe-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50">
+            <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+                <!-- Modal Header -->
+                <div class="flex justify-between items-center p-5 border-b">
+                    <h3 id="modal-title" class="text-2xl font-semibold text-primary-700">Receta</h3>
+                    <button id="modal-close-btn" class="text-gray-400 hover:text-gray-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <!-- Modal Content -->
+                <div class="p-6">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-2">Ingredientes:</h4>
+                    <ul id="modal-ingredients" class="list-disc list-inside text-gray-700 mb-4 space-y-1">
+                        <!-- Ingredientes se llenarán con JS -->
+                    </ul>
+                    <h4 class="text-lg font-semibold text-gray-800 mb-2">Pasos:</h4>
+                    <div id="modal-steps" class="text-gray-700 space-y-2">
+                        <!-- Pasos se llenarán con JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </main>
+
+    <!-- Lógica de JavaScript -->
+    <script>
+        // Espera a que el contenido del DOM esté cargado
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- BASE DE DATOS DEL PLAN ---
+            // El índice 0 es Domingo, 1 es Lunes, etc.
+            const planSemanal = [
+                // 0: Domingo
+                {
+                    dayName: "Domingo",
+                    breakfast: "Yogur entero + 1 fruta chica a elección con cáscara + 1 cda de semillas de chía activadas + 1 cda de salvado de trigo.",
+                    lunch: "2 rapiditas integrales con carne picada magra salteada, porotos negros (extra fibra), queso cremoso y verduras.",
+                    snack: "Licuado de leche descremada + frutillas o arándanos + 1 cda de salvado de trigo.",
+                    dinner: "¼ de tarta (si sobró del viernes) + Ensalada abundante de hojas verdes."
+                },
+                // 1: Lunes
+                {
+                    dayName: "Lunes",
+                    breakfast: "Panqueques de avena <a href='#' class='recipe-link' data-recipe-id='panqueques'>(Ver receta)</a> (½ banana, 1 huevo, 1 clara, 1 cda avena). Agregar 1 cda de chía activada. Topping: mitad de pera con cáscara.",
+                    lunch: "Bife de carne (150-200g) + Ensalada grande de verduras crudas (espinaca, zanahoria rallada) + ¼ de plato de arroz integral. Condimentar con 1 cda de aceite de oliva.",
+                    snack: "Licuado de leche descremada + 1 fruta (ej. ciruela) + 1 cda de salvado de trigo.",
+                    dinner: "Omelette de 2-3 huevos con verduras salteadas (champiñones, pimientos) y queso cremoso."
+                },
+                // 2: Martes
+                {
+                    dayName: "Martes",
+                    breakfast: "2 tostadas de pan integral + 2 huevos revueltos (2 claras + 1 yema) + 1/2 palta chica + 1 kiwi con cáscara (¡bien lavado!).",
+                    lunch: "Wook de pollo con fideos integrales (1 taza cocida). Cargar con abundantes verduras salteadas (brócoli, zanahoria, pimiento).",
+                    snack: "Yogur entero o descremado + 1 fruta picada con cáscara + 1 cda de semillas de chía activadas.",
+                    dinner: "Pollo a la plancha (150-200g) + Ensalada grande de verduras crudas."
+                },
+                // 3: Miércoles
+                {
+                    dayName: "Miércoles",
+                    breakfast: "Yogur entero con 1 cda de salvado de trigo, 1 cda de chía activada y 1 ciruela con cáscara picada.",
+                    lunch: "Guiso de lentejas <a href='#' class='recipe-link' data-recipe-id='lentejas'>(Ver receta)</a> (1.5 tazas) con verduras (zanahoria, pimiento, calabaza) y 1 huevo duro.",
+                    snack: "3 tostadas integrales + 2 cdas de queso untable + 1 cda de semillas activadas.",
+                    dinner: "Hamburguesa casera de pollo + Tortilla de verduras (huevo, acelga, queso)."
+                },
+                // 4: Jueves
+                {
+                    dayName: "Jueves",
+                    breakfast: "Infusión + leche + 2 tostadas de pan integral + 2 cdas de queso crema + 2 de mermelada + 1 cda de semillas activadas + 1 fruta con cáscara.",
+                    lunch: "Filet de pescado al horno + Ensalada tipo 'rusa' (papa, zanahoria, arvejas, huevo) con aderezo de aceite de oliva o yogur natural.",
+                    snack: "Licuado de leche descremada + 1 banana + 1 cda de avena.",
+                    dinner: "½ lata de atún + 2 huevos duros + ensalada de arroz integral y verduras crudas (tomate, lechuga)."
+                },
+                // 5: Viernes
+                {
+                    dayName: "Viernes",
+                    breakfast: "Panqueques de avena <a href='#' class='recipe-link' data-recipe-id='panqueques'>(Ver receta)</a> (receta del plan). Topping: 1 kiwi picado y 1 cdita de miel.",
+                    lunch: "2 porciones de Tarta de verduras (acelga y ricota) + Ensalada mixta de tomate y zanahoria rallada.",
+                    snack: "Yogur entero + 1 puñado de frutos secos (30g).",
+                    dinner: "2 rapiditas integrales rellenas de pollo salteado, palta (grasa saludable) y verduras crudas."
+                },
+                // 6: Sábado
+                {
+                    dayName: "Sábado",
+                    breakfast: "2 tostadas de pan integral + 2 huevos revueltos + 1/2 palta chica + 1 pera con cáscara.",
+                    lunch: "Suprema al horno + Tortilla de verduras grande (huevo, zapallito, queso).",
+                    snack: "3 tostadas integrales con 2 fetas de queso de máquina y 1 cdita de semillas activadas.",
+                    dinner: "Salmón (u otro pescado graso) a la plancha + Puré de calabaza + Ensalada de espinaca cruda."
+                }
+            ];
+            
+            // NUEVA base de datos de recetas
+            const recipes = {
+                panqueques: {
+                    title: "Panqueques de Avena",
+                    ingredients: [
+                        "½ banana pisada", "1 huevo", "1 clara", "1 cda sopera colmada de harina de avena",
+                        "Esencia de vainilla (c/n)", "1 cdita de polvo de hornear", "Edulcorante (a gusto)"
+                    ],
+                    steps: [
+                        "1. Mezclar todos los ingredientes en un bowl hasta que esté homogéneo.",
+                        "2. Calentar una sartén de teflón a fuego bajo.",
+                        "3. Verter la mezcla en la sartén.",
+                        "4. Cocinar a fuego bajo hasta que salgan burbujas en la superficie.",
+                        "5. Dar vuelta y cocinar por 1-2 minutos más.",
+                        "6. Servir con los toppings (pera, kiwi, etc.)."
+                    ]
+                },
+                lentejas: {
+                    title: "Guiso de Lentejas (Simple)",
+                    ingredients: [
+                        "1.5 tazas de lentejas cocidas (o 1 taza cruda)", "1/2 cebolla picada", "1/2 pimiento picado",
+                        "1 zanahoria rallada o en cubos", "1/2 calabaza en cubos", "1 diente de ajo (opcional)",
+                        "Condimentos: pimentón, comino, orégano", "Caldo de verdura (c/n)", "1 huevo duro (para servir)"
+                    ],
+                    steps: [
+                        "1. En una olla, saltear la cebolla, el ajo y el pimiento.",
+                        "2. Agregar la zanahoria y la calabaza. Cocinar por 5 minutos.",
+                        "3. Si usas lentejas crudas, agregarlas y cubrir con caldo. Cocinar 30-40 min. Si usas cocidas, agregarlas al final.",
+                        "4. Agregar los condimentos.",
+                        "5. (Si usas cocidas) Agregar las lentejas y un poco de caldo. Calentar todo junto por 10 minutos.",
+                        "6. Servir en un plato hondo y agregar el huevo duro picado por encima."
+                    ]
+                }
+            };
+
+            // MODIFICADO: Colaciones como objetos
+            const colaciones = [
+                { text: "1 fruta con cáscara (manzana, pera, ciruela)", isTraining: false },
+                { text: "1 puñado de frutos secos (30g)", isTraining: true },
+                { text: "1 yogur (entero o descremado)", isTraining: true },
+                { text: "1 barrita de cereal (alta en fibra)", isTraining: false },
+                { text: "3-4 fetas de queso de máquina", isTraining: false },
+                { text: "1 huevo duro", isTraining: true }
+            ];
+
+            const recordatorios = [
+                "Tomar 1 vaso de agua fría antes del desayuno.",
+                "¡Cumplir con los 3 litros de agua diarios!",
+                "Preferir infusiones (mate, café) y evitar el té de té.",
+                "Activar las semillas (chía/lino) en agua antes de consumir.",
+                "Hacer 2 colaciones al día."
+            ];
+
+            const mealPrepTips = [
+                "Hervir 4-6 huevos y guardarlos en la heladera.",
+                "Lavar y centrifugar verduras de hoja y guardar en tupper.",
+                "Dejar semillas de chía en remojo en frascos individuales.",
+                "Cocinar 1-2 tazas de arroz integral o fideos integrales.",
+                "Cortar verduras (zanahoria, pimiento) para salteados.",
+                "Separar porciones de pollo o carne para descongelar."
+            ];
+
+            // --- LÓGICA DEL DÍA (MODIFICADA) ---
+
+            const today = new Date().getDay();
+            let currentDayIndex = today;
+
+            // Elementos del DOM
+            const trainingToggle = document.getElementById('training-toggle');
+            const colacionesList = document.getElementById('colaciones-list');
+            const digestiveButtons = document.querySelectorAll('.digestive-btn');
+            const notesTextarea = document.getElementById('notes-textarea');
+
+            // Función para actualizar toda la info del plan en la página
+            function updatePlan(dayIndex) {
+                const plan = planSemanal[dayIndex];
+                
+                document.getElementById('day-title').textContent = plan.dayName;
+                document.getElementById('breakfast-plan').innerHTML = plan.breakfast;
+                document.getElementById('lunch-plan').innerHTML = plan.lunch;
+                document.getElementById('snack-plan').innerHTML = plan.snack;
+                document.getElementById('dinner-plan').innerHTML = plan.dinner;
+
+                // Actualizar el subtítulo
+                document.getElementById('subtitle').textContent = (dayIndex === today) ? "Aquí está tu plan de hoy:" : "Estás viendo el plan del:";
+
+                // Cargar estado de entrenamiento para este día
+                const trainingKey = `trainingLog_${plan.dayName}`;
+                const isTraining = JSON.parse(localStorage.getItem(trainingKey)) || false;
+                trainingToggle.checked = isTraining;
+                renderColaciones(isTraining); // Renderizar colaciones según el estado
+
+                // Cargar estado digestivo para este día
+                const digestiveKey = `digestiveLog_${plan.dayName}`;
+                const digestiveState = localStorage.getItem(digestiveKey) || "0"; // "0" = nada
+                renderDigestiveLog(digestiveState);
+
+                // Cargar notas para este día
+                const notesKey = `notesLog_${plan.dayName}`;
+                notesTextarea.value = localStorage.getItem(notesKey) || "";
+            }
+
+            // Rellenar las listas (solo se hace una vez)
+            const recordatoriosList = document.getElementById('recordatorios-list');
+            recordatoriosList.innerHTML = recordatorios.map(item => `<li>${item}</li>`).join('');
+
+            const mealPrepList = document.getElementById('meal-prep-list');
+            mealPrepList.innerHTML = mealPrepTips.map(item => `<li>${item}</li>`).join('');
+
+            // Cargar el plan del día actual al iniciar
+            updatePlan(currentDayIndex);
+
+            // --- Event Listeners para los botones de navegación ---
+            document.getElementById('prev-day-btn').addEventListener('click', () => {
+                currentDayIndex = (currentDayIndex - 1 + 7) % 7;
+                updatePlan(currentDayIndex);
+            });
+
+            document.getElementById('next-day-btn').addEventListener('click', () => {
+                currentDayIndex = (currentDayIndex + 1) % 7;
+                updatePlan(currentDayIndex);
+            });
+
+            // --- NUEVO: Lógica del Switch de Entrenamiento ---
+            
+            // Función para renderizar colaciones
+            function renderColaciones(isTraining) {
+                colacionesList.innerHTML = colaciones.map(item => 
+                    `<li class="${(isTraining && item.isTraining) ? 'font-bold text-primary-700' : ''}">
+                        ${(isTraining && item.isTraining) ? '🏋️‍♀️ ' : ''}${item.text}
+                     </li>`
+                ).join('');
+            }
+
+            // Event listener para el switch
+            trainingToggle.addEventListener('change', (e) => {
+                const isChecked = e.target.checked;
+                const currentPlan = planSemanal[currentDayIndex];
+                const trainingKey = `trainingLog_${currentPlan.dayName}`;
+                
+                // Guardar estado
+                localStorage.setItem(trainingKey, JSON.stringify(isChecked));
+                
+                // Actualizar vista de colaciones
+                renderColaciones(isChecked);
+            });
+
+            // --- NUEVO: Lógica del Diario Digestivo ---
+
+            // Función para renderizar estado digestivo
+            function renderDigestiveLog(selectedValue) {
+                digestiveButtons.forEach(btn => {
+                    if (btn.dataset.value === selectedValue) {
+                        btn.classList.add('selected');
+                    } else {
+                        btn.classList.remove('selected');
+                    }
+                });
+            }
+
+            // Event listeners para los botones de digestión
+            digestiveButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const value = btn.dataset.value;
+                    const currentPlan = planSemanal[currentDayIndex];
+                    const digestiveKey = `digestiveLog_${currentPlan.dayName}`;
+                    
+                    // Guardar estado
+                    localStorage.setItem(digestiveKey, value);
+                    
+                    // Actualizar vista de botones
+                    renderDigestiveLog(value);
+                });
+            });
+            
+            // --- NUEVO: Lógica de Notas ---
+            notesTextarea.addEventListener('input', (e) => {
+                const text = e.target.value;
+                const currentPlan = planSemanal[currentDayIndex];
+                const notesKey = `notesLog_${currentPlan.dayName}`;
+                
+                // Guardar estado
+                localStorage.setItem(notesKey, text);
+            });
+
+            // --- LÓGICA DEL TRACKER DE AGUA ---
+            const waterTrackerContainer = document.getElementById('water-tracker');
+            const resetWaterBtn = document.getElementById('reset-water');
+            const todayDate = new Date().toISOString().split('T')[0];
+            const waterKey = `waterTrack_${todayDate}`;
+            let waterState = JSON.parse(localStorage.getItem(waterKey)) || Array(12).fill(false);
+
+            function renderWaterTracker() {
+                waterTrackerContainer.innerHTML = ''; 
+                waterState.forEach((isToggled, index) => {
+                    const glassBtn = document.createElement('button');
+                    glassBtn.setAttribute('aria-label', `Vaso ${index + 1} de 12`);
+                    glassBtn.dataset.index = index;
+                    glassBtn.className = `p-2 rounded-lg transition-colors ${isToggled ? 'text-primary-500' : 'text-gray-300'} hover:text-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-300`;
+                    glassBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M7 2a1 1 0 00-1 1v1H5a1 1 0 000 2h1v11a1 1 0 001 1h6a1 1 0 001-1V6h1a1 1 0 100-2h-1V3a1 1 0 00-1-1H7zm1 3v11h4V5H8z" clip-rule="evenodd" />
+                                          </svg>`;
+                    
+                    glassBtn.addEventListener('click', () => {
+                        waterState[index] = !waterState[index];
+                        localStorage.setItem(waterKey, JSON.stringify(waterState));
+                        glassBtn.classList.toggle('text-gray-300');
+                        glassBtn.classList.toggle('text-primary-500');
+                    });
+                    waterTrackerContainer.appendChild(glassBtn);
+                });
+            }
+
+            resetWaterBtn.addEventListener('click', () => {
+                waterState = Array(12).fill(false);
+                localStorage.setItem(waterKey, JSON.stringify(waterState));
+                renderWaterTracker(); 
+            });
+            
+            // Cargar el tracker de agua al iniciar (SOLO se carga el de HOY)
+            renderWaterTracker();
+
+            // --- LÓGICA DEL MODAL DE RECETAS ---
+            const modal = document.getElementById('recipe-modal');
+            const modalCloseBtn = document.getElementById('modal-close-btn');
+            const mainContent = document.querySelector('main'); 
+
+            const modalTitle = document.getElementById('modal-title');
+            const modalIngredients = document.getElementById('modal-ingredients');
+            const modalSteps = document.getElementById('modal-steps');
+
+            function openRecipeModal(recipeId) {
+                const recipe = recipes[recipeId];
+                if (!recipe) return;
+                modalTitle.textContent = recipe.title;
+                modalIngredients.innerHTML = recipe.ingredients.map(item => `<li>${item}</li>`).join('');
+                modalSteps.innerHTML = recipe.steps.map(item => `<p>${item}</p>`).join('');
+                modal.classList.remove('hidden');
+            }
+
+            function closeRecipeModal() {
+                modal.classList.add('hidden');
+            }
+
+            modalCloseBtn.addEventListener('click', closeRecipeModal);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeRecipeModal();
+            });
+
+            mainContent.addEventListener('click', (e) => {
+                const recipeLink = e.target.closest('.recipe-link');
+                if (recipeLink) {
+                    e.preventDefault(); 
+                    openRecipeModal(recipeLink.dataset.recipeId);
+                }
+            });
+
+        });
+    </script>
+
+</body>
+</html>
