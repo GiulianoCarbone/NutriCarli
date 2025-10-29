@@ -1,0 +1,21 @@
+{
+  "name": "Plan Nutricional de Carla",
+  "short_name": "Plan Carla",
+  "description": "Aplicación para seguir el plan nutricional diario de Carla.",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#fdf2f8",
+  "theme_color": "#db2777",
+  "icons": [
+    {
+      "src": "https://www.hcmarbella.com/wp-content/uploads/2015/07/logo_rosasanchezramiro.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "https://www.hcmarbella.com/wp-content/uploads/2015/07/logo_rosasanchezramiro.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}

@@ -3,9 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plan Nutricional de Carla</title>
+    <title>Plan Nutricional de Carla 💖</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <!-- PWA Meta Tags para iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Plan Carla">
+    <link rel="apple-touch-icon" href="https://www.hcmarbella.com/wp-content/uploads/2015/07/logo_rosasanchezramiro.jpg">
     <!-- Google Font (Inter) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,6 +36,19 @@
         .digestive-btn.selected {
             @apply ring-4 ring-primary-300 scale-110;
         }
+        /* NUEVO: Animación de pulso para el corazón */
+        .animate-heart-pulse {
+            display: inline-block; /* Necesario para que la transformación funcione */
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+        }
     </style>
     <script>
         // Configuración de la paleta de colores de Tailwind
@@ -36,19 +56,19 @@
             theme: {
                 extend: {
                     colors: {
-                        // Usaremos 'fuchsia' que da unos tonos rosados/morados muy bonitos
+                        // NUEVO: Paleta de colores 'rosa bebé' (pink de Tailwind)
                         primary: {
-                            50: '#fdf4ff',
-                            100: '#fae8ff',
-                            200: '#f5d0fe',
-                            300: '#f0abfc',
-                            400: '#e879f9',
-                            500: '#d946ef',
-                            600: '#c026d3',
-                            700: '#a21caf',
-                            800: '#86198f',
-                            900: '#701a75',
-                            950: '#4a044e',
+                            50: '#fdf2f8',
+                            100: '#fce7f3',
+                            200: '#fbcfe8',
+                            300: '#f9a8d4',
+                            400: '#f472b6',
+                            500: '#ec4899',
+                            600: '#db2777',
+                            700: '#be185d',
+                            800: '#9d174d',
+                            900: '#831843',
+                            950: '#500724',
                         },
                     }
                 }
@@ -61,7 +81,9 @@
     <main class="w-full max-w-5xl mx-auto"> <!-- Aumentado el max-w para la grilla de 3 col -->
         <!-- Saludo Principal -->
         <header class="text-center mb-6">
-            <h1 class="text-4xl sm:text-5xl font-bold text-primary-800">¡Hola, Carla!</h1>
+            <h1 class="text-4xl sm:text-5xl font-bold text-primary-800">
+                ¡Hola, Carla! <span class="animate-heart-pulse">💖</span>
+            </h1>
             <p id="subtitle" class="text-lg sm:text-xl text-primary-700 mt-2">Aquí está tu plan de hoy:</p>
         </header>
 
@@ -220,6 +242,21 @@
         </div>
         
     </main>
+
+    <!-- Script para registrar el Service Worker de la PWA -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker registrado con éxito:', registration);
+                    })
+                    .catch(error => {
+                        console.log('❌ Error al registrar el Service Worker:', error);
+                    });
+            });
+        }
+    </script>
 
     <!-- Lógica de JavaScript -->
     <script>
